@@ -3,8 +3,8 @@ import { Task } from "../types/Task";
 
 class TaskStore {
   tasks: Task[] = [];
-  searchQuery: string = ""; // Строка для поиска
-  statusFilter: "All" | "Pending" | "Completed" = "All"; // Фильтр по статусу
+  searchQuery: string = "";
+  statusFilter: "All" | "Pending" | "Completed" = "All";
 
   constructor() {
     makeAutoObservable(this);
