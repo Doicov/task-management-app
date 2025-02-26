@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
 import { List, IconButton, Card, Typography, Box, Chip } from "@mui/material";
 import { Edit, Delete, EventNote, AccessTime } from "@mui/icons-material";
@@ -10,13 +10,14 @@ import SnackBar from "./SnackBar";
 
 
 const TaskList: React.FC = observer(() => {
-  const [editTask, setEditTask] = React.useState<Task | null>(null);
-  const [dialog, setDialog] = React.useState({ open: false, taskId: "" });
-  const [snackbar, setSnackbar] = React.useState({ open: false, message: "" });
+  const [editTask, setEditTask] = useState<Task | null>(null);
+  const [dialog, setDialog] = useState({ open: false, taskId: "" });
+  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   
   const openDeleteDialog = (id: string) => setDialog({ open: true, taskId: id });
   const closeDeleteDialog = () => setDialog({ open: false, taskId: "" });
 
+  // as business logic could be in another file
   const confirmDelete = () => {
     if (dialog.taskId) {
       taskStore.deleteTask(dialog.taskId);
@@ -44,8 +45,8 @@ const TaskList: React.FC = observer(() => {
                         </Typography>
                         <Box sx={{display: 'flex',alignItems: "center", gap: '10px'}}>
                         <Chip
+                        onClick={() => taskStore.toggleTaskStatus(task.id)} sx={{cursor: "pointer", textDecoration: task.status === "Completed" ? "line-through" : "none", color: task.status === "Completed" ? "#a9a9a9" : "#e1e0e0", }}
                           label={task.status === "Pending" ? "Pending" : "Completed"}
-                          sx={{ backgroundColor: task.status === "Pending" ? "#cf8e14" : "#369b3b", color: task.status === "Pending" ? "#ffd687" : "#75f97b", fontSize: "12px", fontWeight: "bold", height: "27px", borderRadius: "14px", padding: "0 8px"}}
                         />
                         </Box>
                     </Box>
@@ -79,7 +80,7 @@ const TaskList: React.FC = observer(() => {
       <AlertTask open={dialog.open} onClose={closeDeleteDialog} onConfirm={confirmDelete} />
       <SnackBar snackbarOpen={snackbar.open} setSnackbarOpen={(open) => setSnackbar((prev) => ({ ...prev, open }))} message={snackbar.message} />
       
-      {editTask && <TaskForm open={Boolean(editTask)} onClose={() => setEditTask(null)} task={editTask} onTaskAction={(msg) => setSnackbar({ open: true, message: msg })} />}
+      {editTask && <TaskForm open={Boolean(editTask)} onClose={() => setEditTask(null)} task={editTask} onTaskAction={(message) => setSnackbar({ open: true, message: message })} />}
     </Box>
   );
 });

@@ -6,6 +6,7 @@ import { taskStore } from "../stores/TaskStore";
 const TaskFilter: React.FC = observer(() => {
   const [search, setSearch] = useState('');
 
+  //change search to page params
   const onSearchTask = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
     taskStore.setSearchQuery(event.target.value);

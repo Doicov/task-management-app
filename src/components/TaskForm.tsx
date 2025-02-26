@@ -15,6 +15,7 @@ interface TaskFormProps {
 const TaskForm: React.FC<TaskFormProps> = observer(({ open, onClose, task, onTaskAction  }) => {
   const getCurrentDate = () => new Date().toISOString().split("T")[0];
 
+
   const [formData, setFormData] = useState<Task>(
     task || {
       id: uuidv4(),
@@ -23,12 +24,13 @@ const TaskForm: React.FC<TaskFormProps> = observer(({ open, onClose, task, onTas
       dueDate: getCurrentDate(),
       status: "Pending",
       createdAt: ''
-    }
+    } 
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
 
   const handleSubmit = () => {
     if (task) {
@@ -36,7 +38,7 @@ const TaskForm: React.FC<TaskFormProps> = observer(({ open, onClose, task, onTas
       onTaskAction("Task successfully updated!")
     } else {
       taskStore.addTask(formData);
-      onTaskAction("Task successfully added!");
+      onTaskAction(`Task successfully added! ${formData.title}`);
     }
     onClose();
   };

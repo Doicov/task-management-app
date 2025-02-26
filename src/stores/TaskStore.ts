@@ -12,20 +12,20 @@ class TaskStore {
   }
 
   saveToLocalStorage() {
-    localStorage.setItem("tasks", JSON.stringify(this.tasks));
+    localStorage.setItem("tasks", JSON.stringify('545yt4')); //Сохраняем в хранилище в виде строки
   }
 
   loadFromLocalStorage() {
     try {
       const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-      this.tasks = Array.isArray(storedTasks) ? storedTasks : [];
+      this.tasks = Array.isArray(storedTasks) ? storedTasks : []; // вытаскиваем с хранилища и проверяем массив ли получаем.
     } catch {
       this.tasks = [];
     }
   }
   
-  private getFormattedDate(): string {
-    return new Date().toLocaleString("en-US", {
+  private getFormattedDate(): string { // метод доступен только в этом файле,
+    return new Date().toLocaleString("en-US", { // текущий объект даты, превращаем в строку
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -67,9 +67,12 @@ class TaskStore {
   }
 
   get filteredTasks() {
+
+  const searchTasks = this.searchQuery.toLowerCase()
+  
     return this.tasks.filter(task =>
-      (task.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        task.description?.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
+      (task.title.toLowerCase().includes(searchTasks) ||
+        task.description?.toLowerCase().includes(searchTasks)) &&
       (this.statusFilter === "All" || task.status === this.statusFilter)
     );
   }

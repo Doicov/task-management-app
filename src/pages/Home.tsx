@@ -10,6 +10,8 @@ import SnackBar from "../components/SnackBar";
 const Home: React.FC = observer(() => {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  //change to react query states
+  //react-hot-toast
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
   const onTaskActionOpen = (message: string) => setSnackbar({ open: true, message });
@@ -34,7 +36,7 @@ const Home: React.FC = observer(() => {
         indicatorColor="secondary"
         aria-label="secondary tabs example"
         >
-
+          
         {["All", "Completed", "Pending"].map((status) => (
           <Tab
             key={status}
