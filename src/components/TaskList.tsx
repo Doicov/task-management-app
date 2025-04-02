@@ -175,6 +175,7 @@ const TaskList: React.FC = observer(() => {
         open={dialog.open}
         onClose={closeDeleteDialog}
         onConfirm={confirmDelete}
+        itemType="Task"
       />
       <SnackBar
         snackbarOpen={snackbar.open}

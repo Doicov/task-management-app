@@ -16,9 +16,9 @@ export const FolderStore = types
   })
   .views((self) => ({
     get sortedFolders() {
-      return self.folders = cast(self.folders.slice().sort(
+      return self.folders.map((f) => f).sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      ));
+      );
     }
   }))
   .actions((self) => ({
@@ -55,9 +55,6 @@ export const FolderStore = types
             created_at: String(result.data.insert_folders_one.created_at),
           };
           self.folders.push(cast(newFolder));
-          self.folders = cast(self.folders.slice().sort(
-            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          ));
         }
       } catch (error) {
         console.error("Ошибка создания папки:", error);
@@ -87,9 +84,6 @@ export const FolderStore = types
             ...folder,
             ...result.data.update_folders_by_pk,
           });
-          self.folders = cast(self.folders.slice().sort(
-            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          ));
         }
       } catch (error) {
         console.error("Ошибка обновления папки:", error);

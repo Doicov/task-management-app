@@ -91,7 +91,7 @@ const FolderList: React.FC = observer(() => {
         </Button>
       </Box>
       <Grid container spacing={3}>
-        {folderStore.folders.map((folder) => (
+        {folderStore.sortedFolders.map((folder) => (
           <Grid item xs={10} sm={6} md={4} key={folder.id}>
             <Card
               sx={{
@@ -159,6 +159,7 @@ const FolderList: React.FC = observer(() => {
         open={dialog.open}
         onClose={closeDeleteDialog}
         onConfirm={handleDeleteFolder}
+        itemType="Folder"
       />
     </Container>
   );

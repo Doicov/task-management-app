@@ -3,11 +3,12 @@ import { Dialog, DialogTitle, DialogActions, Button } from "@mui/material";
 
 interface AlertTaskProps {
   open: boolean;
+  itemType: string;
   onClose: () => void;
   onConfirm: () => void;
 }
 
-const AlertTask: React.FC<AlertTaskProps> = ({ open, onClose, onConfirm }) => {
+const AlertTask: React.FC<AlertTaskProps> = ({ open, onClose, onConfirm, itemType}) => {
   return (
     <Dialog
       open={open}
@@ -23,7 +24,7 @@ const AlertTask: React.FC<AlertTaskProps> = ({ open, onClose, onConfirm }) => {
       }}
     >
       <DialogTitle sx={{ fontSize: "19px", textAlign: "center" }}>
-        Are you sure you want to delete this Task?
+        Are you sure you want to delete this {itemType}?
       </DialogTitle>
       <DialogActions
         sx={{
@@ -39,7 +40,7 @@ const AlertTask: React.FC<AlertTaskProps> = ({ open, onClose, onConfirm }) => {
           color="error"
           sx={{ width: "100%", "&:hover": { backgroundColor: "#b35e5e57" } }}
         >
-          Delete task
+          Delete {itemType}
         </Button>
         <Button
           variant="outlined"
