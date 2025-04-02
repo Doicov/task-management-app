@@ -1,6 +1,11 @@
-import React from "react";
 import { createTheme, ThemeProvider } from "@mui/material";
-import Home from "./pages/Home";
+// import Home from "./pages/Home";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import FolderList from "./components/FolderList";
+import FolderPage from "./components/FolderPage";
+import { Provider } from "urql";
+import { client } from "./api/client";
+
 
 const theme = createTheme({
   palette: {
@@ -19,12 +24,20 @@ const theme = createTheme({
   },
 });
 
-const App: React.FC = () => {
-  return (
-    <ThemeProvider  theme={theme}>
-      <Home />
-    </ThemeProvider >
+const App = () => {
 
+  return (
+    <Provider value={client}>
+    <ThemeProvider  theme={theme}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/folders" replace />} />
+          <Route path="/folders" element={<FolderList />} />
+          <Route path="/folders/:folderId" element={<FolderPage />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider >
+    </Provider>
   );
 };
 

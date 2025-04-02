@@ -1,81 +1,166 @@
-import { makeAutoObservable } from "mobx";
-import { Task } from "../types/Task";
+import { types, flow, cast, Instance, toGenerator } from "mobx-state-tree";
 
-class TaskStore {
-  tasks: Task[] = [];
-  searchQuery: string = "";
-  statusFilter: "All" | "Pending" | "Completed" = "All";
+import { client } from "../api/client";
+import { GET_TASKS } from "../api/quries";
+import {
+  ADD_TASK,
+  TOGGLE_TASK_STATUS,
+  DELETE_TASK,
+  UPDATE_TASK,
+} from "../api/mutations";
+import { format } from "date-fns";
 
-  constructor() {
-    makeAutoObservable(this);
-    this.loadFromLocalStorage();
-  }
+export const TaskModel = types.model("Task", {
+  id: types.identifier,
+  title: types.string,
+  description: types.maybeNull(types.string),
+  due_date: types.maybeNull(types.string),
+  status: types.enumeration(["Pending", "Completed"]),
+});
 
-  saveToLocalStorage() {
-    localStorage.setItem("tasks", JSON.stringify('545yt4')); //Сохраняем в хранилище в виде строки
-  }
+// Модель хранилища
+const TaskStore = types
+  .model("TaskStore", {
+    tasks: types.array(TaskModel),
+    searchQuery: types.string,
+    statusFilter: types.enumeration(["All", "Pending", "Completed"]),
+    folderId: types.maybeNull(types.string),
+  })
+  .views((self) => ({
+    get filteredTasks() {
+      const search = self.searchQuery.toLowerCase();
+      return self.tasks.filter(
+        (task) =>
+          (task.title.toLowerCase().includes(search) ||
+            task.description?.toLowerCase().includes(search)) &&
+          (self.statusFilter === "All" || task.status === self.statusFilter)
+      );
+    },
+    formatDate(date: string | null) {
+      return date && date.trim() ? format(new Date(date), "dd MMMM yyyy") : "No date";
+    },
+  }))
+  .actions((self) => {
+    const fetchTasks = flow(function* () {
+      //Тут изменили на мите
+      if (!self.folderId) return; // если folderid не задан выходим из функции 
+      const result = yield* toGenerator(
+        client.query(GET_TASKS, { folderId: self.folderId }).toPromise()
+      );
 
-  loadFromLocalStorage() {
-    try {
-      const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-      this.tasks = Array.isArray(storedTasks) ? storedTasks : []; // вытаскиваем с хранилища и проверяем массив ли получаем.
-    } catch {
-      this.tasks = [];
-    }
-  }
-  
-  private getFormattedDate(): string { // метод доступен только в этом файле,
-    return new Date().toLocaleString("en-US", { // текущий объект даты, превращаем в строку
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
+      if (!result.data) { // если данных нет, просто выходим
+        return;
+      }
+      const transformTasks = result.data.tasks.map((task) => ({
+        ...task,
+        status: task.status ? "Completed" : "Pending",
+        due_date: task.due_date,
+      }));
+      self.tasks = cast(transformTasks); // сохраняем задачи в store
     });
-  }
-  
-  addTask(task: Task) {
-    this.tasks.push({ ...task, createdAt: this.getFormattedDate(), status: "Pending" });
-    this.saveToLocalStorage();
-  }
 
-  updateTask(updatedTask: Task) {
-    this.tasks = this.tasks.map(task => task.id === updatedTask.id ? updatedTask : task);
-    this.saveToLocalStorage();
-  }
+    return {
+      fetchTasks, // Объявляем перед вызовом
 
-  deleteTask(id: string) {
-    this.tasks = this.tasks.filter(task => task.id !== id);
-    this.saveToLocalStorage();
-  }
+      setFolderId(folderId: string) {
+        self.folderId = folderId;
+        fetchTasks();
+      },
 
-  toggleTaskStatus(id: string) {
-    const task = this.tasks.find(task => task.id === id);
-    if (task) {
-      task.status = task.status === "Pending" ? "Completed" : "Pending";
-      this.saveToLocalStorage();
-    }
-  }
+      setSearchQuery(query: string) {
+        self.searchQuery = query;
+      },
 
-  setSearchQuery(query: string) {
-    this.searchQuery = query;
-  }
+      setStatusFilter(status: "All" | "Pending" | "Completed") {
+        self.statusFilter = status;
+      },
 
-  setStatusFilter(status: "All" | "Pending" | "Completed") {
-    this.statusFilter = status;
-  }
+      addTask: flow(function* ( title: string, description: string, dueDate: string) {
+        if (!self.folderId) return;
+        try {
+          const result = yield* toGenerator(client
+          .mutation(ADD_TASK, { title, description, due_date: dueDate, folderId: self.folderId,})
+          .toPromise());
 
-  get filteredTasks() {
+          if (!result.data?.insert_tasks_one) return;
+          self.tasks.push(
+            cast({
+              ...result.data.insert_tasks_one,
+              status: "Pending",
+            })
+          );
+        } catch (error) {
+          console.error("Error when adding task", error);
+        }
+      }),
 
-  const searchTasks = this.searchQuery.toLowerCase()
-  
-    return this.tasks.filter(task =>
-      (task.title.toLowerCase().includes(searchTasks) ||
-        task.description?.toLowerCase().includes(searchTasks)) &&
-      (this.statusFilter === "All" || task.status === this.statusFilter)
-    );
-  }
-}
+      toggleTaskStatus: flow(function* (id: string) {
+        const task = self.tasks.find((t) => t.id === id);
+        if (!task) return 
 
-export const taskStore = new TaskStore();
+        try {
+          const newStatus = task.status === "Pending";
+
+          const result = yield* toGenerator(client
+            .mutation(TOGGLE_TASK_STATUS, { id, status: newStatus })
+            .toPromise());
+
+          if (!result.data?.update_tasks_by_pk) return;
+
+            task.status = newStatus ? "Completed" : "Pending";       
+        } catch (error) {
+          console.error("Status change error", error)
+        }
+      }),
+
+      deleteTask: flow(function* (id: string) {
+        try {
+          const result = yield* toGenerator(client.mutation(DELETE_TASK, { id }).toPromise());
+          if (!result.data?.delete_tasks_by_pk) return;
+
+          self.tasks.replace(self.tasks.filter((task) => task.id !== id));
+        } catch (error) {
+          console.error("Error task deletion", error)
+        }
+      }),
+
+      updateTask: flow(function* (updatedTask: Instance<typeof TaskModel>) {
+        try {
+          const result = yield* toGenerator(client
+            .mutation(UPDATE_TASK, {
+              id: updatedTask.id,
+              title: updatedTask.title,
+              description: updatedTask.description,
+              due_date: updatedTask.due_date ?? "",
+            })
+            .toPromise());
+
+          if(!result.data?.update_tasks_by_pk) return;
+
+          self.tasks.replace(
+            self.tasks.map((task) => {
+              if (task.id === updatedTask.id) {
+                return cast({
+                  id: updatedTask.id,
+                  title: updatedTask.title,
+                  description: updatedTask.description,
+                  due_date: updatedTask.due_date,
+                  status: task.status, // Используем старый статус из store
+                });
+              }
+              return task;
+        })
+          );
+        } catch (error) {
+          console.error("Error task updation", error)
+        }
+      }),
+    };
+  });
+
+export const taskStore = TaskStore.create({
+  tasks: [],
+  searchQuery: "",
+  statusFilter: "All",
+  folderId: null,
+});

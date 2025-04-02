@@ -1,0 +1,38 @@
+
+services:
+  postgres:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: myuser
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  
+  hasura:
+    image: hasura/graphql-engine:v2.39.1
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      # HASURA_GRAPHQL_JWT_SECRET: '{
+      #   "type": "RS256",
+      #   "jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
+      #   "audience": "sanya-a70bc",
+      #   "issuer": "https://securetoken.google.com/sanya-a70bc"
+      #   }'
+      HASURA_GRAPHQL_DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydb
+      HASURA_GRAPHQL_CORS_DOMAIN: "*"  # Разрешает запросы от всех источников
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+
+volumes:
+  postgres_data:

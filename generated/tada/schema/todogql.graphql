@@ -1,0 +1,896 @@
+schema {
+  query: query_root
+  mutation: mutation_root
+  subscription: subscription_root
+}
+
+"""whether this query should be cached (Hasura Cloud only)"""
+directive @cached(
+  """measured in seconds"""
+  ttl: Int! = 60
+
+  """refresh the cache entry"""
+  refresh: Boolean! = false
+) on QUERY
+
+"""
+Boolean expression to compare columns of type "Boolean". All fields are combined with logical 'AND'.
+"""
+input Boolean_comparison_exp {
+  _eq: Boolean
+  _gt: Boolean
+  _gte: Boolean
+  _in: [Boolean!]
+  _is_null: Boolean
+  _lt: Boolean
+  _lte: Boolean
+  _neq: Boolean
+  _nin: [Boolean!]
+}
+
+"""
+Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'.
+"""
+input String_comparison_exp {
+  _eq: String
+  _gt: String
+  _gte: String
+
+  """does the column match the given case-insensitive pattern"""
+  _ilike: String
+  _in: [String!]
+
+  """
+  does the column match the given POSIX regular expression, case insensitive
+  """
+  _iregex: String
+  _is_null: Boolean
+
+  """does the column match the given pattern"""
+  _like: String
+  _lt: String
+  _lte: String
+  _neq: String
+
+  """does the column NOT match the given case-insensitive pattern"""
+  _nilike: String
+  _nin: [String!]
+
+  """
+  does the column NOT match the given POSIX regular expression, case insensitive
+  """
+  _niregex: String
+
+  """does the column NOT match the given pattern"""
+  _nlike: String
+
+  """
+  does the column NOT match the given POSIX regular expression, case sensitive
+  """
+  _nregex: String
+
+  """does the column NOT match the given SQL regular expression"""
+  _nsimilar: String
+
+  """
+  does the column match the given POSIX regular expression, case sensitive
+  """
+  _regex: String
+
+  """does the column match the given SQL regular expression"""
+  _similar: String
+}
+
+"""ordering argument of a cursor"""
+enum cursor_ordering {
+  """ascending ordering of the cursor"""
+  ASC
+
+  """descending ordering of the cursor"""
+  DESC
+}
+
+"""
+columns and relationships of "folders"
+"""
+type folders {
+  created_at: timestamp
+  id: uuid!
+  image_url: String
+  name: String!
+}
+
+"""
+aggregated selection of "folders"
+"""
+type folders_aggregate {
+  aggregate: folders_aggregate_fields
+  nodes: [folders!]!
+}
+
+"""
+aggregate fields of "folders"
+"""
+type folders_aggregate_fields {
+  count(columns: [folders_select_column!], distinct: Boolean): Int!
+  max: folders_max_fields
+  min: folders_min_fields
+}
+
+"""
+Boolean expression to filter rows from the table "folders". All fields are combined with a logical 'AND'.
+"""
+input folders_bool_exp {
+  _and: [folders_bool_exp!]
+  _not: folders_bool_exp
+  _or: [folders_bool_exp!]
+  created_at: timestamp_comparison_exp
+  id: uuid_comparison_exp
+  image_url: String_comparison_exp
+  name: String_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "folders"
+"""
+enum folders_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  folders_pkey
+}
+
+"""
+input type for inserting data into table "folders"
+"""
+input folders_insert_input {
+  created_at: timestamp
+  id: uuid
+  image_url: String
+  name: String
+}
+
+"""aggregate max on columns"""
+type folders_max_fields {
+  created_at: timestamp
+  id: uuid
+  image_url: String
+  name: String
+}
+
+"""aggregate min on columns"""
+type folders_min_fields {
+  created_at: timestamp
+  id: uuid
+  image_url: String
+  name: String
+}
+
+"""
+response of any mutation on the table "folders"
+"""
+type folders_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [folders!]!
+}
+
+"""
+on_conflict condition type for table "folders"
+"""
+input folders_on_conflict {
+  constraint: folders_constraint!
+  update_columns: [folders_update_column!]! = []
+  where: folders_bool_exp
+}
+
+"""Ordering options when selecting data from "folders"."""
+input folders_order_by {
+  created_at: order_by
+  id: order_by
+  image_url: order_by
+  name: order_by
+}
+
+"""primary key columns input for table: folders"""
+input folders_pk_columns_input {
+  id: uuid!
+}
+
+"""
+select columns of table "folders"
+"""
+enum folders_select_column {
+  """column name"""
+  created_at
+
+  """column name"""
+  id
+
+  """column name"""
+  image_url
+
+  """column name"""
+  name
+}
+
+"""
+input type for updating data in table "folders"
+"""
+input folders_set_input {
+  created_at: timestamp
+  id: uuid
+  image_url: String
+  name: String
+}
+
+"""
+Streaming cursor of the table "folders"
+"""
+input folders_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: folders_stream_cursor_value_input!
+
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input folders_stream_cursor_value_input {
+  created_at: timestamp
+  id: uuid
+  image_url: String
+  name: String
+}
+
+"""
+update columns of table "folders"
+"""
+enum folders_update_column {
+  """column name"""
+  created_at
+
+  """column name"""
+  id
+
+  """column name"""
+  image_url
+
+  """column name"""
+  name
+}
+
+input folders_updates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: folders_set_input
+
+  """filter the rows which have to be updated"""
+  where: folders_bool_exp!
+}
+
+"""mutation root"""
+type mutation_root {
+  """
+  delete data from the table: "folders"
+  """
+  delete_folders(
+    """filter the rows which have to be deleted"""
+    where: folders_bool_exp!
+  ): folders_mutation_response
+
+  """
+  delete single row from the table: "folders"
+  """
+  delete_folders_by_pk(id: uuid!): folders
+
+  """
+  delete data from the table: "tasks"
+  """
+  delete_tasks(
+    """filter the rows which have to be deleted"""
+    where: tasks_bool_exp!
+  ): tasks_mutation_response
+
+  """
+  delete single row from the table: "tasks"
+  """
+  delete_tasks_by_pk(id: uuid!): tasks
+
+  """
+  insert data into the table: "folders"
+  """
+  insert_folders(
+    """the rows to be inserted"""
+    objects: [folders_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: folders_on_conflict
+  ): folders_mutation_response
+
+  """
+  insert a single row into the table: "folders"
+  """
+  insert_folders_one(
+    """the row to be inserted"""
+    object: folders_insert_input!
+
+    """upsert condition"""
+    on_conflict: folders_on_conflict
+  ): folders
+
+  """
+  insert data into the table: "tasks"
+  """
+  insert_tasks(
+    """the rows to be inserted"""
+    objects: [tasks_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: tasks_on_conflict
+  ): tasks_mutation_response
+
+  """
+  insert a single row into the table: "tasks"
+  """
+  insert_tasks_one(
+    """the row to be inserted"""
+    object: tasks_insert_input!
+
+    """upsert condition"""
+    on_conflict: tasks_on_conflict
+  ): tasks
+
+  """
+  update data of the table: "folders"
+  """
+  update_folders(
+    """sets the columns of the filtered rows to the given values"""
+    _set: folders_set_input
+
+    """filter the rows which have to be updated"""
+    where: folders_bool_exp!
+  ): folders_mutation_response
+
+  """
+  update single row of the table: "folders"
+  """
+  update_folders_by_pk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: folders_set_input
+    pk_columns: folders_pk_columns_input!
+  ): folders
+
+  """
+  update multiples rows of table: "folders"
+  """
+  update_folders_many(
+    """updates to execute, in order"""
+    updates: [folders_updates!]!
+  ): [folders_mutation_response]
+
+  """
+  update data of the table: "tasks"
+  """
+  update_tasks(
+    """sets the columns of the filtered rows to the given values"""
+    _set: tasks_set_input
+
+    """filter the rows which have to be updated"""
+    where: tasks_bool_exp!
+  ): tasks_mutation_response
+
+  """
+  update single row of the table: "tasks"
+  """
+  update_tasks_by_pk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: tasks_set_input
+    pk_columns: tasks_pk_columns_input!
+  ): tasks
+
+  """
+  update multiples rows of table: "tasks"
+  """
+  update_tasks_many(
+    """updates to execute, in order"""
+    updates: [tasks_updates!]!
+  ): [tasks_mutation_response]
+}
+
+"""column ordering options"""
+enum order_by {
+  """in ascending order, nulls last"""
+  asc
+
+  """in ascending order, nulls first"""
+  asc_nulls_first
+
+  """in ascending order, nulls last"""
+  asc_nulls_last
+
+  """in descending order, nulls first"""
+  desc
+
+  """in descending order, nulls first"""
+  desc_nulls_first
+
+  """in descending order, nulls last"""
+  desc_nulls_last
+}
+
+type query_root {
+  """
+  fetch data from the table: "folders"
+  """
+  folders(
+    """distinct select on columns"""
+    distinct_on: [folders_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [folders_order_by!]
+
+    """filter the rows returned"""
+    where: folders_bool_exp
+  ): [folders!]!
+
+  """
+  fetch aggregated fields from the table: "folders"
+  """
+  folders_aggregate(
+    """distinct select on columns"""
+    distinct_on: [folders_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [folders_order_by!]
+
+    """filter the rows returned"""
+    where: folders_bool_exp
+  ): folders_aggregate!
+
+  """fetch data from the table: "folders" using primary key columns"""
+  folders_by_pk(id: uuid!): folders
+
+  """
+  fetch data from the table: "tasks"
+  """
+  tasks(
+    """distinct select on columns"""
+    distinct_on: [tasks_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [tasks_order_by!]
+
+    """filter the rows returned"""
+    where: tasks_bool_exp
+  ): [tasks!]!
+
+  """
+  fetch aggregated fields from the table: "tasks"
+  """
+  tasks_aggregate(
+    """distinct select on columns"""
+    distinct_on: [tasks_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [tasks_order_by!]
+
+    """filter the rows returned"""
+    where: tasks_bool_exp
+  ): tasks_aggregate!
+
+  """fetch data from the table: "tasks" using primary key columns"""
+  tasks_by_pk(id: uuid!): tasks
+}
+
+type subscription_root {
+  """
+  fetch data from the table: "folders"
+  """
+  folders(
+    """distinct select on columns"""
+    distinct_on: [folders_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [folders_order_by!]
+
+    """filter the rows returned"""
+    where: folders_bool_exp
+  ): [folders!]!
+
+  """
+  fetch aggregated fields from the table: "folders"
+  """
+  folders_aggregate(
+    """distinct select on columns"""
+    distinct_on: [folders_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [folders_order_by!]
+
+    """filter the rows returned"""
+    where: folders_bool_exp
+  ): folders_aggregate!
+
+  """fetch data from the table: "folders" using primary key columns"""
+  folders_by_pk(id: uuid!): folders
+
+  """
+  fetch data from the table in a streaming manner: "folders"
+  """
+  folders_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [folders_stream_cursor_input]!
+
+    """filter the rows returned"""
+    where: folders_bool_exp
+  ): [folders!]!
+
+  """
+  fetch data from the table: "tasks"
+  """
+  tasks(
+    """distinct select on columns"""
+    distinct_on: [tasks_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [tasks_order_by!]
+
+    """filter the rows returned"""
+    where: tasks_bool_exp
+  ): [tasks!]!
+
+  """
+  fetch aggregated fields from the table: "tasks"
+  """
+  tasks_aggregate(
+    """distinct select on columns"""
+    distinct_on: [tasks_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [tasks_order_by!]
+
+    """filter the rows returned"""
+    where: tasks_bool_exp
+  ): tasks_aggregate!
+
+  """fetch data from the table: "tasks" using primary key columns"""
+  tasks_by_pk(id: uuid!): tasks
+
+  """
+  fetch data from the table in a streaming manner: "tasks"
+  """
+  tasks_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [tasks_stream_cursor_input]!
+
+    """filter the rows returned"""
+    where: tasks_bool_exp
+  ): [tasks!]!
+}
+
+"""
+columns and relationships of "tasks"
+"""
+type tasks {
+  created_at: timestamp
+  description: String
+  due_date: timestamptz!
+  folder_id: uuid
+  id: uuid!
+  status: Boolean!
+  title: String!
+}
+
+"""
+aggregated selection of "tasks"
+"""
+type tasks_aggregate {
+  aggregate: tasks_aggregate_fields
+  nodes: [tasks!]!
+}
+
+"""
+aggregate fields of "tasks"
+"""
+type tasks_aggregate_fields {
+  count(columns: [tasks_select_column!], distinct: Boolean): Int!
+  max: tasks_max_fields
+  min: tasks_min_fields
+}
+
+"""
+Boolean expression to filter rows from the table "tasks". All fields are combined with a logical 'AND'.
+"""
+input tasks_bool_exp {
+  _and: [tasks_bool_exp!]
+  _not: tasks_bool_exp
+  _or: [tasks_bool_exp!]
+  created_at: timestamp_comparison_exp
+  description: String_comparison_exp
+  due_date: timestamptz_comparison_exp
+  folder_id: uuid_comparison_exp
+  id: uuid_comparison_exp
+  status: Boolean_comparison_exp
+  title: String_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "tasks"
+"""
+enum tasks_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  tasks_pkey
+}
+
+"""
+input type for inserting data into table "tasks"
+"""
+input tasks_insert_input {
+  created_at: timestamp
+  description: String
+  due_date: timestamptz
+  folder_id: uuid
+  id: uuid
+  status: Boolean
+  title: String
+}
+
+"""aggregate max on columns"""
+type tasks_max_fields {
+  created_at: timestamp
+  description: String
+  due_date: timestamptz
+  folder_id: uuid
+  id: uuid
+  title: String
+}
+
+"""aggregate min on columns"""
+type tasks_min_fields {
+  created_at: timestamp
+  description: String
+  due_date: timestamptz
+  folder_id: uuid
+  id: uuid
+  title: String
+}
+
+"""
+response of any mutation on the table "tasks"
+"""
+type tasks_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [tasks!]!
+}
+
+"""
+on_conflict condition type for table "tasks"
+"""
+input tasks_on_conflict {
+  constraint: tasks_constraint!
+  update_columns: [tasks_update_column!]! = []
+  where: tasks_bool_exp
+}
+
+"""Ordering options when selecting data from "tasks"."""
+input tasks_order_by {
+  created_at: order_by
+  description: order_by
+  due_date: order_by
+  folder_id: order_by
+  id: order_by
+  status: order_by
+  title: order_by
+}
+
+"""primary key columns input for table: tasks"""
+input tasks_pk_columns_input {
+  id: uuid!
+}
+
+"""
+select columns of table "tasks"
+"""
+enum tasks_select_column {
+  """column name"""
+  created_at
+
+  """column name"""
+  description
+
+  """column name"""
+  due_date
+
+  """column name"""
+  folder_id
+
+  """column name"""
+  id
+
+  """column name"""
+  status
+
+  """column name"""
+  title
+}
+
+"""
+input type for updating data in table "tasks"
+"""
+input tasks_set_input {
+  created_at: timestamp
+  description: String
+  due_date: timestamptz
+  folder_id: uuid
+  id: uuid
+  status: Boolean
+  title: String
+}
+
+"""
+Streaming cursor of the table "tasks"
+"""
+input tasks_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: tasks_stream_cursor_value_input!
+
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input tasks_stream_cursor_value_input {
+  created_at: timestamp
+  description: String
+  due_date: timestamptz
+  folder_id: uuid
+  id: uuid
+  status: Boolean
+  title: String
+}
+
+"""
+update columns of table "tasks"
+"""
+enum tasks_update_column {
+  """column name"""
+  created_at
+
+  """column name"""
+  description
+
+  """column name"""
+  due_date
+
+  """column name"""
+  folder_id
+
+  """column name"""
+  id
+
+  """column name"""
+  status
+
+  """column name"""
+  title
+}
+
+input tasks_updates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: tasks_set_input
+
+  """filter the rows which have to be updated"""
+  where: tasks_bool_exp!
+}
+
+scalar timestamp
+
+"""
+Boolean expression to compare columns of type "timestamp". All fields are combined with logical 'AND'.
+"""
+input timestamp_comparison_exp {
+  _eq: timestamp
+  _gt: timestamp
+  _gte: timestamp
+  _in: [timestamp!]
+  _is_null: Boolean
+  _lt: timestamp
+  _lte: timestamp
+  _neq: timestamp
+  _nin: [timestamp!]
+}
+
+scalar timestamptz
+
+"""
+Boolean expression to compare columns of type "timestamptz". All fields are combined with logical 'AND'.
+"""
+input timestamptz_comparison_exp {
+  _eq: timestamptz
+  _gt: timestamptz
+  _gte: timestamptz
+  _in: [timestamptz!]
+  _is_null: Boolean
+  _lt: timestamptz
+  _lte: timestamptz
+  _neq: timestamptz
+  _nin: [timestamptz!]
+}
+
+scalar uuid
+
+"""
+Boolean expression to compare columns of type "uuid". All fields are combined with logical 'AND'.
+"""
+input uuid_comparison_exp {
+  _eq: uuid
+  _gt: uuid
+  _gte: uuid
+  _in: [uuid!]
+  _is_null: Boolean
+  _lt: uuid
+  _lte: uuid
+  _neq: uuid
+  _nin: [uuid!]
+}
