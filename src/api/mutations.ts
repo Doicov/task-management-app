@@ -1,27 +1,17 @@
 // import gql from "gql.tada";
 import { graphql } from "../../generated/tada/graphql";
 
-export const ADD_TASK = graphql(`
-  mutation ToogleTaskStatus(
-    $title: String!
-    $description: String
-    $due_date: timestamptz
-    $folderId: uuid!
-  ) {
-    insert_tasks_one(
-      object: {
-        title: $title
-        description: $description
-        due_date: $due_date
-        folder_id: $folderId
+export const ADD_TASKS = graphql(`
+  mutation insertTask($objects: [tasks_insert_input!]!) {
+    insert_tasks(objects: $objects) {
+      returning {
+        id
+        title
+        description
+        due_date
+        status
+        folder_id
       }
-    ) {
-      id
-      title
-      description
-      due_date
-      status
-      folder_id
     }
   }
 `);
