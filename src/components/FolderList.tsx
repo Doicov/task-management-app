@@ -91,67 +91,71 @@ const FolderList: React.FC = observer(() => {
         </Button>
       </Box>
       <Grid container spacing={3}>
-        {folderStore.sortedFolders.map((folder) => (
-          <Grid item xs={10} sm={6} md={4} key={folder.id}>
-            <Card
-              sx={{
-                background: "rgba(20, 20, 50, 0.3)",
-                borderRadius: "12px",
-                boxShadow: "12px 11px 21px 0px rgba(29, 34, 37, 0.48)",
-                transition:
-                  "transform 0.4s cubic-bezier(.25,.46,.45,.94), box-shadow 0.4s cubic-bezier(.25,.46,.45,.94)",
-                "&:hover": {
-                  transform: "scale(1.02)",
-                  boxShadow: "0px 4px 20px rgba(0,0,0,0.35)",
-                },
-              }}
-            >
-              <CardActionArea component={Link} to={`/folders/${folder.id}`}>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={`/${folder.image_url || "images/default.jpg"}`}
-                  alt={folder.name}
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h6" color="#e1e0e0">
-                    {folder.name}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#b9b9b9" }}>
-                    Дата создания:{" "}
-                    {new Date(folder.created_at).toLocaleDateString()}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-              <CardActions>
-                <input
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  id={`upload-${folder.id}`}
-                  onChange={(e) => handleImageChange(folder.id, e)}
-                />
-                <label htmlFor={`upload-${folder.id}`}>
-                  <IconButton color="primary" component="span">
-                    <Image />
+        {folderStore.sortedFolders.map(
+          ({ id, image_url, name, created_at }) => (
+            <Grid item xs={10} sm={6} md={4} key={id}>
+              <Card
+                sx={{
+                  background: "rgba(20, 20, 50, 0.3)",
+                  borderRadius: "12px",
+                  boxShadow: "12px 11px 21px 0px rgba(29, 34, 37, 0.48)",
+                  transition:
+                    "transform 0.4s cubic-bezier(.25,.46,.45,.94), box-shadow 0.4s cubic-bezier(.25,.46,.45,.94)",
+                  "&:hover": {
+                    transform: "scale(1.02)",
+                    boxShadow: "0px 4px 20px rgba(0,0,0,0.35)",
+                  },
+                }}
+              >
+                <CardActionArea component={Link} to={`/folders/${id}`}>
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image={`/${image_url || "images/default.jpg"}`}
+                    alt={name}
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant="h6" color="#e1e0e0">
+                      {name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#b9b9b9" }}>
+                      Дата создания:{" "}
+                      {created_at
+                        ? new Date(created_at).toLocaleDateString()
+                        : "-"}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+                <CardActions>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    id={`upload-${id}`}
+                    onChange={(e) => handleImageChange(id, e)}
+                  />
+                  <label htmlFor={`upload-${id}`}>
+                    <IconButton color="primary" component="span">
+                      <Image />
+                    </IconButton>
+                  </label>
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleUpdateFolder(id)}
+                  >
+                    <Edit />
                   </IconButton>
-                </label>
-                <IconButton
-                  color="primary"
-                  onClick={() => handleUpdateFolder(folder.id)}
-                >
-                  <Edit />
-                </IconButton>
-                <IconButton
-                  color="error"
-                  onClick={() => openDeleteDialog(folder.id)}
-                >
-                  <Delete />
-                </IconButton>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
+                  <IconButton
+                    color="error"
+                    onClick={() => openDeleteDialog(id)}
+                  >
+                    <Delete />
+                  </IconButton>
+                </CardActions>
+              </Card>
+            </Grid>
+          )
+        )}
       </Grid>
 
       <FolderForm open={openForm} onClose={handleCloseForm} />

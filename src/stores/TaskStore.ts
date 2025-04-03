@@ -3,10 +3,10 @@ import { types, flow, cast, Instance, toGenerator } from "mobx-state-tree";
 import { client } from "../api/client";
 import { GET_TASKS } from "../api/quries";
 import {
-  ADD_TASK,
   TOGGLE_TASK_STATUS,
   DELETE_TASK,
   UPDATE_TASK,
+  ADD_TASKS,
 } from "../api/mutations";
 import { format } from "date-fns";
 
@@ -37,18 +37,21 @@ const TaskStore = types
       );
     },
     formatDate(date: string | null) {
-      return date && date.trim() ? format(new Date(date), "dd MMMM yyyy") : "No date";
+      return date && date.trim()
+        ? format(new Date(date), "dd MMMM yyyy")
+        : "No date";
     },
   }))
   .actions((self) => {
     const fetchTasks = flow(function* () {
       //Тут изменили на мите
-      if (!self.folderId) return; // если folderid не задан выходим из функции 
+      if (!self.folderId) return; // если folderid не задан выходим из функции
       const result = yield* toGenerator(
         client.query(GET_TASKS, { folderId: self.folderId }).toPromise()
       );
 
-      if (!result.data) { // если данных нет, просто выходим
+      if (!result.data) {
+        // если данных нет, просто выходим
         return;
       }
       const transformTasks = result.data.tasks.map((task) => ({
@@ -75,17 +78,27 @@ const TaskStore = types
         self.statusFilter = status;
       },
 
-      addTask: flow(function* ( title: string, description: string, dueDate: string) {
+      addTasks: flow(function* (
+        tasks: { title: string; description: string; dueDate: string }[]
+      ) {
         if (!self.folderId) return;
         try {
-          const result = yield* toGenerator(client
-          .mutation(ADD_TASK, { title, description, due_date: dueDate, folderId: self.folderId,})
-          .toPromise());
+          const result = yield* toGenerator(
+            client
+              .mutation(ADD_TASKS, {
+                objects: tasks.map(({ title, description, dueDate }) => ({
+                  title,
+                  description,
+                  due_date: dueDate,
+                  folder_id: self.folderId,
+                })),
+              })
+              .toPromise()
+          );
 
-          if (!result.data?.insert_tasks_one) return;
-          self.tasks.push(
-            cast({
-              ...result.data.insert_tasks_one,
+          result.data?.insert_tasks?.returning.forEach((t) =>
+            self.tasks.push({
+              ...t,
               status: "Pending",
             })
           );
@@ -96,46 +109,52 @@ const TaskStore = types
 
       toggleTaskStatus: flow(function* (id: string) {
         const task = self.tasks.find((t) => t.id === id);
-        if (!task) return 
+        if (!task) return;
 
         try {
           const newStatus = task.status === "Pending";
 
-          const result = yield* toGenerator(client
-            .mutation(TOGGLE_TASK_STATUS, { id, status: newStatus })
-            .toPromise());
+          const result = yield* toGenerator(
+            client
+              .mutation(TOGGLE_TASK_STATUS, { id, status: newStatus })
+              .toPromise()
+          );
 
           if (!result.data?.update_tasks_by_pk) return;
 
-            task.status = newStatus ? "Completed" : "Pending";       
+          task.status = newStatus ? "Completed" : "Pending";
         } catch (error) {
-          console.error("Status change error", error)
+          console.error("Status change error", error);
         }
       }),
 
       deleteTask: flow(function* (id: string) {
         try {
-          const result = yield* toGenerator(client.mutation(DELETE_TASK, { id }).toPromise());
+          const result = yield* toGenerator(
+            client.mutation(DELETE_TASK, { id }).toPromise()
+          );
           if (!result.data?.delete_tasks_by_pk) return;
 
           self.tasks.replace(self.tasks.filter((task) => task.id !== id));
         } catch (error) {
-          console.error("Error task deletion", error)
+          console.error("Error task deletion", error);
         }
       }),
 
       updateTask: flow(function* (updatedTask: Instance<typeof TaskModel>) {
         try {
-          const result = yield* toGenerator(client
-            .mutation(UPDATE_TASK, {
-              id: updatedTask.id,
-              title: updatedTask.title,
-              description: updatedTask.description,
-              due_date: updatedTask.due_date ?? "",
-            })
-            .toPromise());
+          const result = yield* toGenerator(
+            client
+              .mutation(UPDATE_TASK, {
+                id: updatedTask.id,
+                title: updatedTask.title,
+                description: updatedTask.description,
+                due_date: updatedTask.due_date ?? "",
+              })
+              .toPromise()
+          );
 
-          if(!result.data?.update_tasks_by_pk) return;
+          if (!result.data?.update_tasks_by_pk) return;
 
           self.tasks.replace(
             self.tasks.map((task) => {
@@ -149,10 +168,10 @@ const TaskStore = types
                 });
               }
               return task;
-        })
+            })
           );
         } catch (error) {
-          console.error("Error task updation", error)
+          console.error("Error task updation", error);
         }
       }),
     };
